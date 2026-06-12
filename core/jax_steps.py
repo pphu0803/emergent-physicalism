@@ -444,10 +444,10 @@ def jax_demographic(arrays: AgentArrays, key: jax.Array, config: dict) -> tuple:
 # Employer Status
 # ============================================================
 
-def jax_employer_status(arrays: AgentArrays) -> AgentArrays:
+def jax_employer_status(arrays: AgentArrays, cfg: dict) -> AgentArrays:
     n = arrays.alive.shape[0]
     alive_count = jnp.sum(arrays.alive).astype(jnp.float32)
-    employer_ratio = _CFG_DEFAULTS['employer_ratio']
+    employer_ratio = cfg.get('employer_ratio', _CFG_DEFAULTS['employer_ratio'])
     n_employers = jnp.maximum(1, (alive_count * employer_ratio).astype(jnp.int32))
 
     # Employers = capital holders (by tools quantity; quality determines productivity but not identity)
@@ -1064,7 +1064,7 @@ def jax_step_core(arrays, key, current_tick, *static_params) -> tuple:
     arrays, key, c_attempt, c_success, c_cross = jax_coercion_core(arrays, key, cfg)
 
     # 4. Employer status
-    arrays = jax_employer_status(arrays)
+    arrays = jax_employer_status(arrays, cfg)
 
     # 5. Labor market O(NK) -- only when employment is enabled
     arrays, key, l_hired = jax_labor_market_core(arrays, key, cfg)

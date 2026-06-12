@@ -9,7 +9,7 @@ Phase 4 元规则消融 — 逐一关闭子系统，验证贡献
   A4: 无品质入定价 (quality_in_pricing=False) — 需要代码小改
 """
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['JAX_PLATFORMS'] = 'cpu'
 
 import jax

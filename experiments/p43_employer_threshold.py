@@ -3,7 +3,7 @@
 验证制度参数变化是否改变宏观规律的性质（而非程度）。
 """
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['JAX_PLATFORMS'] = 'cpu'
 
 import jax
