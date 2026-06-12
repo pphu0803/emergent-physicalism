@@ -33,7 +33,6 @@ class EmergenceAnalyzer:
 
     @staticmethod
     def analyze_single(results: Dict[str, Any]) -> List[EmergenceResult]:
-        """对单次运行结果进行涌现检验"""
         ts = results.get('time_series', {})
         if not ts:
             return []
@@ -58,7 +57,6 @@ class EmergenceAnalyzer:
         if not results_list:
             return []
 
-        # 对每次运行分别检验
         single_results = [EmergenceAnalyzer.analyze_single(r) for r in results_list]
 
         # Aggregate by law ID
@@ -109,7 +107,6 @@ class EmergenceAnalyzer:
         return EmergenceAnalyzer.analyze_single(results)
 
     # ============================================================
-    # HL-1: 资本集中度上升（Mann-Kendall趋势检验）
     # ============================================================
 
     @staticmethod
@@ -176,7 +173,6 @@ class EmergenceAnalyzer:
         )
 
     # ============================================================
-    # HL-3: 竞争消亡（人口半衰期 + MK检验）
     # ============================================================
 
     @staticmethod
@@ -237,12 +233,9 @@ class EmergenceAnalyzer:
             #
             # 1. Terminal population below initial (most direct competition elimination evidence)
             pop_declined = stable_pop[-1] < initial_pop * 0.9
-            # 2. 累计净增长为负（长期死亡>出生）
             cumulative_negative = cumulative_net[-1] < 0
-            # 3. 人口MK趋势下降且终态低于初始（统计显著的趋势性萎缩）
             pop_shrinking = (mk_pop['trend'] == 'decreasing' and mk_pop['significant']
                              and stable_pop[-1] < initial_pop)
-            # 4. 后半段死亡率系统性地超过出生率
             mid = len(net_growth_arr) // 2
             if mid > 0:
                 late_avg_net = np.mean(net_growth_arr[mid:])
@@ -254,7 +247,6 @@ class EmergenceAnalyzer:
                        (death_exceeds_birth and pop_declined)
 
             if emerged:
-                # 置信度与人口萎缩幅度正相关
                 pop_decline_ratio = max(0, 1 - stable_pop[-1] / initial_pop)
                 confidence = min(1.0, max(0.3, pop_decline_ratio * 1.5))
             else:
@@ -264,16 +256,10 @@ class EmergenceAnalyzer:
             avg_death_rate = np.mean(death_rate[start:]) if len(death_rate) > start else 0
 
             evidence = (
-                f"人口: {initial_pop}->{stable_pop[-1]}, "
-                f"累计出生={sum(births)}, 累计死亡={sum(deaths)}, "
-                f"平均出生率={avg_birth_rate:.1f}‰, "
-                f"平均死亡率={avg_death_rate:.1f}‰, "
-                f"净增长MK: tau={mk_net['tau']:.3f}, p={mk_net['p_value']:.4f}"
             )
 
             return EmergenceResult(
                 law_id='HL-3',
-                law_name='竞争消亡',
                 emerged=emerged,
                 confidence=confidence,
                 evidence=evidence,
@@ -290,7 +276,6 @@ class EmergenceAnalyzer:
                 statistical_test='mann_kendall + birth/death dynamics',
             )
 
-        # === 无ML-9数据时：退回旧逻辑（兼容P1-P3） ===
         half_life = len(population)
         for i, p in enumerate(population):
             if p <= initial_pop / 2:
@@ -336,7 +321,6 @@ class EmergenceAnalyzer:
         )
 
     # ============================================================
-    # HL-4: 内生周期性危机（替代数据法 + 危机事件检测）
     # ============================================================
 
     @staticmethod
@@ -352,16 +336,12 @@ class EmergenceAnalyzer:
         start = len(prod_arr) // 5
         stable_prod = prod_arr[start:]
 
-        # 1. 替代数据法检验周期性
         periodicity = test_periodicity(stable_prod, num_surrogates=50)
 
-        # 2. 危机事件检测
         crises = detect_crisis_events(stable_prod, window=20)
 
-        # 3. 变异系数
         cv = np.std(stable_prod) / np.mean(stable_prod) if np.mean(stable_prod) > 0 else 0
 
-        # 综合判断
         has_periodicity = periodicity.get('is_periodic', False)
         has_crises = len(crises) >= 2
         high_volatility = cv > 0.2
@@ -381,9 +361,6 @@ class EmergenceAnalyzer:
 
         evidence = (
             f"CV={cv:.3f}, "
-            f"周期性检验: p={periodicity.get('p_value', 1):.3f} "
-            f"({'显著' if has_periodicity else '不显著'}), "
-            f"检测到{len(crises)}次危机事件"
         )
 
         if crises:
@@ -399,14 +376,13 @@ class EmergenceAnalyzer:
             details={
                 'periodicity': periodicity,
                 'num_crises': len(crises),
-                'crises': crises[:5],  # 只保留前5个
+                'crises': crises[:5],
                 'cv': cv,
             },
             statistical_test='surrogate_data + crisis_detection',
         )
 
     # ============================================================
-    # HL-5: 涓滴效应的条件性
     # ============================================================
 
     @staticmethod
@@ -444,7 +420,6 @@ class EmergenceAnalyzer:
         )
 
     # ============================================================
-    # HL-2: 利润率均等化趋势（部门间利润率标准差）
     # ============================================================
 
     @staticmethod
@@ -515,7 +490,6 @@ class EmergenceAnalyzer:
 
     @staticmethod
     def format_report(results: List[EmergenceResult]) -> str:
-        """格式化涌现检验报告"""
         lines = [
             "=" * 70,
             "  Emergence Test Report (Statistical Framework)",

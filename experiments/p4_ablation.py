@@ -1,12 +1,5 @@
 """
-Phase 4 元规则消融 — 逐一关闭子系统，验证贡献
 
-5 个实验：
-  baseline: 全部开启
-  A1: 无借贷 (lending_enabled=False)
-  A2: 无雇佣 (employment_enabled=False)
-  A3: 无品质投资 (quality_investment=False) — 需要代码小改
-  A4: 无品质入定价 (quality_in_pricing=False) — 需要代码小改
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

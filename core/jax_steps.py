@@ -131,7 +131,7 @@ def jax_sector_production(arrays: AgentArrays, key: jax.Array, config: dict) -> 
     work_capacity = jax_age_capacity(arrays, config)
     labor = arrays.labor_remaining * work_capacity
 
-    # 经验加成：边际递减，上界 +30%
+    # Experience bonus: diminishing returns, capped at +30%
     exp_bonus = 1.0 + 0.3 * (1.0 - jnp.exp(-arrays.production_experience * 0.01))
     eff_skill = arrays.skill * exp_bonus
     eff_skill = jnp.where(arrays.coercion_debuff_ticks > 0, eff_skill * 0.7, eff_skill)
@@ -200,19 +200,19 @@ def jax_sector_production(arrays: AgentArrays, key: jax.Array, config: dict) -> 
 # ============================================================
 
 def jax_self_sufficiency(arrays: AgentArrays, config: dict) -> AgentArrays:
-    """自给自足：消耗 goods 维持生存
+    """Self-sufficiency: consume goods to survive
 
-    1. 应急：resources 不足时，将 goods 转换为 resources 弥补缺口
-    2. 常规：消耗 30% 的 goods（生物代谢需求），转化为 resources
-    生存转换按数量（卡路里），不按品质（口味）—— 品质影响市场价值，不影响生存
+    1. Emergency: when resources are insufficient, convert goods to resources to cover the deficit
+    2. Routine: consume 30% of goods (biological metabolic demand), convert to resources
+    Survival conversion is by quantity (calories), not quality (taste) -- quality affects market value, not survival
     """
     subsistence = config.get('subsistence_cost', 0.9)
 
-    # 应急：弥补 resource 缺口（按数量，不按品质）
+    # Emergency: cover resource deficit (by quantity, not quality)
     gap = jnp.maximum(0.0, subsistence - arrays.resources)
     emergency = jnp.minimum(arrays.goods, gap)
 
-    # 常规消费：30% 的 goods 转为 resources（生物代谢）
+    # Routine consumption: 30% of goods converted to resources (biological metabolism)
     normal = arrays.goods * 0.3
 
     convert = jnp.maximum(emergency, normal)
@@ -353,8 +353,8 @@ def jax_demographic(arrays: AgentArrays, key: jax.Array, config: dict) -> tuple:
     didx = dead_sorted[jnp.maximum(0, n - birth_range - 1)]
     pidx = repro_sorted[jnp.maximum(0, n - birth_range - 1)]
 
-    # n_dead 和 n_repro 是 traced，但 birth_range 是静态的
-    # valid 条件：slot 确实是 dead 且 parent 确实在 reproducing
+    # n_dead and n_repro are traced, but birth_range is static
+    # valid condition: slot is actually dead and parent is actually reproducing
     n_dead = jnp.sum(dead_mask).astype(jnp.int32)
     n_repro = jnp.sum(reproducing).astype(jnp.int32)
     has_birth = (
@@ -786,7 +786,7 @@ def jax_goods_market_core(arrays: AgentArrays, key: jax.Array, config: dict) -> 
 
 
 # ============================================================
-# ML-10: 债务偿还
+# ML-10: Debt repayment
 # ============================================================
 
 def jax_debt_repayment(arrays: AgentArrays, config: dict) -> tuple:

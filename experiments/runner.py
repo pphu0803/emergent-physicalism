@@ -68,7 +68,6 @@ def _run_single_sim(args: Tuple[int, int, float, dict, list]) -> Dict[str, Any]:
         if rule_name in RULE_REGISTRY:
             rules.append(RULE_REGISTRY[rule_name](**rule_kwargs))
         else:
-            # 尝试从config构建
             rules.append(RULE_REGISTRY.get(rule_name, NoTax)())
 
     num_ticks = meta_law_config.pop('_num_ticks', 500)
@@ -85,7 +84,6 @@ def _run_single_sim(args: Tuple[int, int, float, dict, list]) -> Dict[str, Any]:
 
 
 class ExperimentRunner:
-    """实验运行器"""
 
     def __init__(self, output_dir: str = 'experiments'):
         self.output_dir = output_dir
@@ -112,7 +110,6 @@ class ExperimentRunner:
         return result
 
     def run_single(self, config: ExperimentConfig, verbose: bool = True) -> List[Dict[str, Any]]:
-        """运行单个实验配置（含多次重复，串行）"""
         print(f"\n{'='*60}")
         print(f"  Experiment: {config.name}")
         print(f"  Description: {config.description}")
@@ -147,7 +144,6 @@ class ExperimentRunner:
         config: ExperimentConfig,
         max_workers: int = 16,
     ) -> List[Dict[str, Any]]:
-        """并行运行单个实验配置的多次重复（多进程加速）"""
         print(f"\n{'='*60}")
         print(f"  Experiment: {config.name} (PARALLEL, {max_workers} workers)")
         print(f"  Config: {config.num_agents} agents, {config.num_ticks} ticks, {config.num_runs} runs")
@@ -183,7 +179,6 @@ class ExperimentRunner:
         parallel: bool = True,
         max_workers: int = 16,
     ) -> Dict[str, List[Dict[str, Any]]]:
-        """运行多个实验配置进行对比"""
         start_time = time.time()
 
         for config in configs:
@@ -200,18 +195,15 @@ class ExperimentRunner:
         return self.results
 
     def analyze(self, config_name: str) -> None:
-        """分析某个实验的涌现规律"""
         if config_name not in self.results:
             print(f"  No results for '{config_name}'")
             return
 
-        # 使用最后一次运行的结果进行分析
         result = self.results[config_name][-1]
         analysis = EmergenceAnalyzer.analyze_all(result)
         report = EmergenceAnalyzer.format_report(analysis)
         print(report)
 
-        # 保存报告
         exp_dir = os.path.join(self.output_dir, config_name.replace(' ', '_').replace(':', ''))
         os.makedirs(exp_dir, exist_ok=True)
         report_path = os.path.join(exp_dir, 'emergence_report.txt')
@@ -220,7 +212,6 @@ class ExperimentRunner:
         print(f"  Report saved to {report_path}")
 
     def analyze_all(self) -> None:
-        """分析所有实验的涌现规律"""
         print("\n" + "=" * 70)
         print("  COMPREHENSIVE EMERGENCE ANALYSIS")
         print("=" * 70)
@@ -229,12 +220,11 @@ class ExperimentRunner:
             self.analyze(config_name)
 
     def visualize(self, config_name: str) -> None:
-        """可视化某个实验的结果"""
         if config_name not in self.results:
             print(f"  No results for '{config_name}'")
             return
 
-        result = self.results[config_name][-1]  # 使用最后一次运行
+        result = self.results[config_name][-1]
         exp_dir = os.path.join(self.output_dir, config_name.replace(' ', '_').replace(':', ''))
         os.makedirs(exp_dir, exist_ok=True)
 
@@ -242,13 +232,11 @@ class ExperimentRunner:
         plot_results(result, save_path=plot_path, title=config_name)
 
     def visualize_comparison(self, save_name: str = 'comparison') -> None:
-        """可视化多个实验的对比"""
         if len(self.results) < 2:
             print("  Need at least 2 experiment results for comparison")
             return
 
         labels = list(self.results.keys())
-        # 使用每个实验最后一次运行的结果
         results_list = [self.results[name][-1] for name in labels]
 
         save_path = os.path.join(self.output_dir, f'{save_name}.png')
@@ -260,7 +248,6 @@ class ExperimentRunner:
         )
 
     def save_all(self) -> None:
-        """保存所有结果"""
         for config_name, results_list in self.results.items():
             exp_dir = os.path.join(self.output_dir, config_name.replace(' ', '_').replace(':', ''))
             os.makedirs(exp_dir, exist_ok=True)

@@ -19,7 +19,6 @@ from rules import (
 
 @dataclass
 class ExperimentConfig:
-    """单个实验的配置"""
     name: str
     description: str
     num_agents: int = 200
@@ -31,7 +30,6 @@ class ExperimentConfig:
     meta_law_config: Optional[Dict[str, Any]] = None
 
     def build_rules(self) -> list:
-        """构造规则实例列表"""
         return [rule for rule in self.rules]
 
     def to_dict(self) -> Dict[str, Any]:

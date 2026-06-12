@@ -1,7 +1,5 @@
 """
-Phase 4 参数扫描 — 5 个核心参数 × 5 个值 = 25 个实验
 
-扫描最敏感的参数，找到稳态边界和相变点。
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

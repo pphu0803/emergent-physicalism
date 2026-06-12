@@ -1,6 +1,4 @@
 """
-雇主阈值灵敏度扫描 — employer_ratio ∈ {0.05, 0.10, 0.15, 0.20, 0.30, 0.40}
-验证制度参数变化是否改变宏观规律的性质（而非程度）。
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

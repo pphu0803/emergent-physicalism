@@ -1,35 +1,13 @@
 """
-Phase 4 压力测试 — 8 种极端场景
 
-设计原则：
-  - 单参数扫描已覆盖极端单参数值（p4_param_sweep）
-  - 本实验聚焦「组合冲击」和「时序冲击」
-  - 每个场景都有理论动机，不是纯粹凑极端值
 
-场景设计：
-  S1: 大萧条 — 低禀赋 + 低生产力 (inflow=0.3, production_scale=1.5)
-      动机: 两个低于相变阈值的参数叠加，模拟经济衰退期
 
-  S2: 黄金时代 — 高禀赋 + 高生产力 + 低折旧 (inflow=1.5, production_scale=5, depr=0.005)
-      动机: 三个利好叠加，观察不平等是否失控、品质是否过热
 
-  S3: 高周转高风险 — 高折旧 + 大资本空间 (depr=0.08, K=50)
-      动机: 资本快速折旧但空间大，观察社会流动性特征
 
-  S4: 工匠困境 — 小资本空间 + 低生产力 (K=3, production_scale=1.5)
-      动机: 资本效率低 + 空间小，系统是否陷入低资本陷阱
 
-  S5: 生存紧缩 — 高消耗 + 低禀赋 (subsistence=1.5, inflow=0.5)
-      动机: inflow/subsistence=0.33，远低于品质激活阈值0.56
 
-  S6: 时序冲击：资源断崖 — t=2000时inflow从0.72突降到0.3，持续1000 ticks后恢复
-      动机: 模拟自然灾害/战争导致资源骤降，观察恢复能力
 
-  S7: 时序冲击：折旧风暴 — t=2000时depreciation_rate从0.02升到0.10，持续500 ticks后恢复
-      动机: 模拟技术毁灭/资本突然过时
 
-  S8: 人口翻倍 — 400 agents初始化，观察系统是否在更大规模下保持均衡
-      动机: 验证系统规模可扩展性
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -152,7 +130,6 @@ KEY_METRICS = [
 
 
 def run_static_scenario(name, scenario):
-    """S1-S5: 组合冲击场景"""
     cfg = {**BASE_CONFIG, **scenario['overrides']}
     n_agents = scenario.get('num_agents', 200)
 
@@ -193,7 +170,6 @@ def run_static_scenario(name, scenario):
 
 
 def run_temporal_scenario(name, scenario):
-    """S6-S7: 时序冲击场景"""
     cfg = {**BASE_CONFIG}
     shock_start = scenario['shock_start']
     shock_end = scenario['shock_start'] + scenario['shock_duration']
@@ -309,7 +285,6 @@ def run_scale_scenario():
 
     return {
         'name': 'S8_double_population',
-        'description': '人口翻倍: 400 agents',
         'type': 'scale',
         'num_agents': n_agents,
         'elapsed': elapsed,

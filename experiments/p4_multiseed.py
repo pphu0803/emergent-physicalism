@@ -1,7 +1,5 @@
 """
-Phase 4 多种子验证 — 10 seeds × 10k ticks
 
-验证稳态指标的鲁棒性，排除 seed-specific 偶然现象。
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

@@ -101,11 +101,11 @@ def generate_surrogate_data(x: np.ndarray, num_surrogates: int = 100) -> np.ndar
         n_half = n // 2
         random_phases = np.random.uniform(0, 2 * np.pi, n_half)
         new_phases = np.zeros(n, dtype=complex)
-        new_phases[0] = phases[0]  # 保持直流分量
+        new_phases[0] = phases[0]
 
         if n % 2 == 0:
             new_phases[1:n_half] = random_phases[:n_half - 1]
-            new_phases[n_half] = phases[n_half]  # 奈奎斯特分量
+            new_phases[n_half] = phases[n_half]
             new_phases[n_half + 1:] = np.conj(new_phases[1:n_half][::-1])
         else:
             new_phases[1:n_half + 1] = random_phases
@@ -123,9 +123,7 @@ def test_periodicity(
     significance_level: float = 0.05,
 ) -> Dict[str, Any]:
     """
-    使用替代数据法检验序列的周期性是否显著
 
-    检验统计量：自相关的最大值（排除零滞后）
 
     Returns:
         dict with 'is_periodic', 'p_value', 'max_autocorr', 'surrogate_max_autocorr_dist'
@@ -134,7 +132,6 @@ def test_periodicity(
     if n < 20:
         return {'is_periodic': False, 'p_value': 1.0, 'reason': 'insufficient data'}
 
-    # 原始数据的自相关最大值
     x_centered = x - x.mean()
     autocorr = np.correlate(x_centered, x_centered, mode='full')
     autocorr = autocorr[len(autocorr) // 2:]
@@ -143,7 +140,6 @@ def test_periodicity(
     else:
         return {'is_periodic': False, 'p_value': 1.0, 'reason': 'zero variance'}
 
-    # 排除零滞后和前几个滞后
     min_lag = max(3, n // 20)
     max_lag = min(n // 2, 100)
     if min_lag >= max_lag:
@@ -151,7 +147,6 @@ def test_periodicity(
 
     original_max_ac = np.max(np.abs(autocorr_norm[min_lag:max_lag]))
 
-    # 替代数据的自相关最大值
     surrogates = generate_surrogate_data(x, num_surrogates)
     surrogate_max_acs = []
 
@@ -167,10 +162,8 @@ def test_periodicity(
 
     surrogate_max_acs = np.array(surrogate_max_acs)
 
-    # p 值：替代数据中超过原始数据的比例
     p_value = np.mean(surrogate_max_acs >= original_max_ac)
 
-    # 检测到的周期（在原始自相关中的位置）
     peak_lag = min_lag + np.argmax(np.abs(autocorr_norm[min_lag:max_lag]))
 
     return {
@@ -213,7 +206,6 @@ def cross_run_comparison(
         elif metric == 'final_population':
             values.append(final.get('population', 0))
         elif metric == 'population_half_life':
-            # 计算人口减半所需的时间步
             pop = ts.get('population', [])
             if len(pop) > 1:
                 initial = pop[0]
@@ -222,11 +214,10 @@ def cross_run_comparison(
                         values.append(i)
                         break
                 else:
-                    values.append(len(pop))  # 未减半
+                    values.append(len(pop))
             else:
                 values.append(0)
         else:
-            # 默认取终值
             values.append(final.get(metric, 0))
 
     values = np.array(values)
